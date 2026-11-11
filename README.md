@@ -1,4 +1,4 @@
-# EryScript Language Support
+# EryScript Language
 
 ![EryScript icon](EryScript_Icon.png)
 
