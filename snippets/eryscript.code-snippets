@@ -1,0 +1,124 @@
+{
+    "EryScript Method": {
+        "prefix": "emethod",
+        "body": [
+            "method ${1:Name}(${2:params})",
+            "\t${0}",
+            "mend"
+        ],
+        "description": "Method block closed with mend"
+    },
+    "EryScript If": {
+        "prefix": "eif",
+        "body": [
+            "if ${1:condition}",
+            "\t${0}",
+            "end"
+        ],
+        "description": "If block"
+    },
+    "EryScript If Else": {
+        "prefix": "eife",
+        "body": [
+            "if ${1:condition}",
+            "\t${2}",
+            "else",
+            "\t${0}",
+            "end"
+        ],
+        "description": "If / else block"
+    },
+    "EryScript Elseif": {
+        "prefix": "eelseif",
+        "body": [
+            "elseif ${1:condition}",
+            "\t${0}"
+        ],
+        "description": "Else-if branch"
+    },
+    "EryScript For Loop": {
+        "prefix": "efor",
+        "body": [
+            "for ${1:i} = ${2:0} to ${3:count} - 1",
+            "\t${0}",
+            "end"
+        ],
+        "description": "For loop"
+    },
+    "EryScript Try Catch": {
+        "prefix": "etry",
+        "body": [
+            "try",
+            "\t${1}",
+            "catch",
+            "\t${2:call Debug.Log(\"error\")}",
+            "end"
+        ],
+        "description": "Try / catch block"
+    },
+    "EryScript Callback": {
+        "prefix": "ecallback",
+        "body": [
+            "method ${1:OnPlayerConnectedServerCallback}(${2:player})",
+            "\t${0}",
+            "mend"
+        ],
+        "description": "Game callback method"
+    },
+    "EryScript Using Directives": {
+        "prefix": "eusing",
+        "body": [
+            "using Keyneed",
+            "using UnityEngine",
+            "using EryScriptUtils",
+            "using EryScript",
+            "using System"
+        ],
+        "description": "Standard using directives"
+    },
+    "EryScript Variable": {
+        "prefix": "evar",
+        "body": [
+            "var ${1:name} = ${2:null}"
+        ],
+        "description": "Variable declaration"
+    },
+    "EryScript Debug Log": {
+        "prefix": "elog",
+        "body": [
+            "call Debug.Log(\"${1:message}\")"
+        ],
+        "description": "Debug.Log call"
+    },
+    "EryScript New Object": {
+        "prefix": "enew",
+        "body": [
+            "var ${1:name} = new ${2:ObjectArrayWrapper}()"
+        ],
+        "description": "Instantiate an engine class"
+    },
+    "EryScript Call": {
+        "prefix": "ecal",
+        "body": [
+            "call ${1:object}.${2:Method}(${3:args})"
+        ],
+        "description": "Call expression"
+    },
+    "EryScript Complete Mod": {
+        "prefix": "emode",
+        "body": [
+            "using Keyneed",
+            "using UnityEngine",
+            "using EryScriptUtils",
+            "using EryScript",
+            "using System",
+            "",
+            "method OnModLoadedCallback(script, mod)",
+            "\tcall Debug.Log(\"Mod loaded\")",
+            "mend",
+            "",
+            "${0}"
+        ],
+        "description": "Complete mod template"
+    }
+}

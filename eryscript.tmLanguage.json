@@ -1,0 +1,123 @@
+{
+    "scopeName": "source.eryscript",
+    "patterns": [
+        { "include": "#comment-block" },
+        { "include": "#comment-line" },
+        { "include": "#using-directive" },
+        { "include": "#method-definition" },
+        { "include": "#control-flow" },
+        { "include": "#variable-declaration" },
+        { "include": "#call-expression" },
+        { "include": "#string-literal" },
+        { "include": "#number-literal" },
+        { "include": "#builtin-constants" },
+        { "include": "#engine-classes" },
+        { "include": "#game-callbacks" },
+        { "include": "#dot-methods" },
+        { "include": "#dot-properties" },
+        { "include": "#operators" },
+        { "include": "#punctuation" }
+    ],
+    "repository": {
+        "comment-block": {
+            "begin": "/\\*",
+            "end": "\\*/",
+            "name": "comment.block.eryscript"
+        },
+        "comment-line": {
+            "begin": "//",
+            "end": "$",
+            "name": "comment.line.double-slash.eryscript"
+        },
+        "using-directive": {
+            "match": "\\b(using)\\s+([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)",
+            "captures": {
+                "1": { "name": "keyword.control.import.eryscript" },
+                "2": { "name": "support.module.eryscript" }
+            }
+        },
+        "method-definition": {
+            "match": "\\b(method)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+            "captures": {
+                "1": { "name": "keyword.control.function.eryscript" },
+                "2": { "name": "entity.name.function.eryscript" }
+            }
+        },
+        "control-flow": {
+            "patterns": [
+                {
+                    "match": "\\b(if|elseif|else|end|for|to|return|break|continue|try|catch|new|and|or|not)\\b",
+                    "name": "keyword.control.eryscript"
+                },
+                {
+                    "match": "\\b(method|mend|var|call|using)\\b",
+                    "name": "keyword.control.structure.eryscript"
+                }
+            ]
+        },
+        "variable-declaration": {
+            "match": "\\b(var)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+            "captures": {
+                "1": { "name": "keyword.control.variable.eryscript" },
+                "2": { "name": "variable.other.eryscript" }
+            }
+        },
+        "call-expression": {
+            "match": "\\b(call)\\b",
+            "name": "keyword.control.call.eryscript"
+        },
+        "string-literal": {
+            "patterns": [
+                {
+                    "begin": "\"",
+                    "end": "\"",
+                    "name": "string.quoted.double.eryscript",
+                    "patterns": [
+                        { "match": "\\\\.", "name": "constant.character.escape.eryscript" },
+                        { "match": "\\{[^}]+\\}", "name": "variable.interpolation.eryscript" }
+                    ]
+                },
+                {
+                    "begin": "'",
+                    "end": "'",
+                    "name": "string.quoted.single.eryscript",
+                    "patterns": [
+                        { "match": "\\\\.", "name": "constant.character.escape.eryscript" }
+                    ]
+                }
+            ]
+        },
+        "number-literal": {
+            "match": "\\b\\d+\\.?\\d*\\b",
+            "name": "constant.numeric.eryscript"
+        },
+        "builtin-constants": {
+            "match": "\\b(true|false|null|All|Player|Server)\\b",
+            "name": "constant.language.eryscript"
+        },
+        "engine-classes": {
+            "match": "\\b(NetworkUserList|GlobalVars|Debug|MyNetwork|MyAsync|NetworkChat|EryHelper|DialogBuilder|DialogPanel|DialogPreferences|DialogComponent|DialogText|DialogButton|DialogSpace|DialogDropdown|MyDropdownOption|ObjectArrayWrapper|BytePacker|RpcTarget|EryScriptWrapper|DialogInput|Vector3|Time|Math|Random|Int32|Keyneed|UnityEngine|EryScriptUtils|EryScript|System)\\b",
+            "name": "support.class.engine.eryscript"
+        },
+        "game-callbacks": {
+            "match": "\\b(OnModLoadedCallback|OnPlayerConnectedServerCallback|OnPlayerDisconnectedServerCallback|OnPlayerDieServerCallback|OnChatMessageServerCallback|OnPlayerCreatedCallback|OnPlayerRespawnedServerCallback|OnPlayerDamagedServerCallback)\\b",
+            "name": "support.function.callback.eryscript"
+        },
+        "dot-methods": {
+            "match": "\\.(Add|Get|Set|Count|WrInt|StartWr|tryAddItem|AddItem|ToArray|Dispose|SpecifyTypeBySample|Close|Open|Log|sendAlert|sendChat|getModelFromPlayer|getUserFromID|getUserFromPlayer|WaitForSeconds|Ceiling|Range|StartsWith|Substring|Replace|IndexOf|LastIndexOf|Trim|ToLower|ToString|Parse|SendClothId|SendScriptToPlayer|GetComponentByName|RemoveAt|Clear|remove|add|damage|RPC)\\b",
+            "name": "support.method.builtin.eryscript"
+        },
+        "dot-properties": {
+            "match": "\\.(text|name|nickname|id|owner|Owner|preferences|components|onClick|onValueChanged|closeOption|low|options|inventory|inventoryLocal|model|clanId|script|time|position|transform|IsMasterClient|length|count|defaultValue|lifeLocal|LocalPlayer|x|y|z)\\b",
+            "name": "variable.other.property.eryscript"
+        },
+        "operators": {
+            "match": "(==|!=|<=|>=|<|>|\\+|-|\\*|\\/|%|&&|\\|\\||!|=)",
+            "name": "keyword.operator.eryscript"
+        },
+        "punctuation": {
+            "match": "[(),;:\\[\\]{}]",
+            "name": "punctuation.eryscript"
+        }
+    }
+}

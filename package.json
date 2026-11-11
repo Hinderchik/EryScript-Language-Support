@@ -1,0 +1,110 @@
+{
+    "name": "eryscript",
+    "displayName": "EryScript Language Support",
+    "description": "Syntax highlighting, IntelliSense, diagnostics, snippets and file icons for EryScript - the scripting language of Erythros Lite.",
+    "version": "2.0.0",
+    "publisher": "xunkal1",
+    "author": "XunKal1",
+    "license": "MIT",
+    "icon": "EryScript_Icon.png",
+    "homepage": "https://github.com/Hinderchik/EryScript-Language-Support#readme",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Hinderchik/EryScript-Language-Support.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Hinderchik/EryScript-Language-Support/issues"
+    },
+    "galleryBanner": {
+        "color": "#0B3D2E",
+        "theme": "dark"
+    },
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Snippets",
+        "Linters",
+        "Themes"
+    ],
+    "keywords": [
+        "eryscript",
+        "erythros",
+        "erythros lite",
+        "keyneed",
+        "mod",
+        "modding",
+        "scripting",
+        "game",
+        "unity"
+    ],
+    "activationEvents": [
+        "onLanguage:eryscript"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "eryscript",
+                "aliases": [
+                    "EryScript",
+                    "eryscript"
+                ],
+                "extensions": [
+                    ".ery",
+                    ".eryscript"
+                ],
+                "configuration": "./language-configuration.json",
+                "scopeName": "source.eryscript"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "eryscript",
+                "scopeName": "source.eryscript",
+                "path": "./eryscript.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "eryscript",
+                "path": "./snippets/eryscript.code-snippets"
+            }
+        ],
+        "commands": [
+            {
+                "command": "eryscript.validateDocument",
+                "title": "Validate EryScript Document",
+                "category": "EryScript"
+            },
+            {
+                "command": "eryscript.showDocumentation",
+                "title": "Open EryScript Documentation",
+                "category": "EryScript"
+            }
+        ],
+        "configuration": {
+            "title": "EryScript",
+            "properties": {
+                "eryscript.enableDiagnostics": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check for missing mend/end, duplicate methods, wrong keyword casing and deprecated calls."
+                },
+                "eryscript.autoApplyIconTheme": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Apply the EryScript file icon theme automatically when no icon theme is selected yet."
+                }
+            }
+        },
+        "iconThemes": [
+            {
+                "id": "eryscript-icons",
+                "label": "EryScript Icon Theme",
+                "path": "./file-icons-json-file.json"
+            }
+        ]
+    }
+}

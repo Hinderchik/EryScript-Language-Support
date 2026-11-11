@@ -1,0 +1,10 @@
+.vscodeignore
+.vscode/**
+docs/**
+PUBLISHING.md
+*.vsix
+install.bat
+install.js
+file_icon_theme.png
+**/*.map
+**/.DS_Store

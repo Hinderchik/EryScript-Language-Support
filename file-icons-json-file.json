@@ -1,0 +1,14 @@
+{
+    "iconDefinitions": {
+        "ery_icon": {
+            "iconPath": "./images/icon_transparent.png"
+        }
+    },
+    "fileExtensions": {
+        "ery": "ery_icon",
+        "eryscript": "ery_icon"
+    },
+    "languageIds": {
+        "eryscript": "ery_icon"
+    }
+}
