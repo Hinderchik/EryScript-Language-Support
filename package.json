@@ -1,6 +1,6 @@
 {
     "name": "eryscript",
-    "displayName": "EryScript Language Support",
+    "displayName": "EryScript Language",
     "description": "Syntax highlighting, IntelliSense, diagnostics, snippets and file icons for EryScript - the scripting language of Erythros Lite.",
     "version": "2.0.0",
     "publisher": "xunkal1",

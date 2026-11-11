@@ -1,5 +1,7 @@
 .vscodeignore
 .vscode/**
+.git/**
+.gitignore
 docs/**
 PUBLISHING.md
 *.vsix
