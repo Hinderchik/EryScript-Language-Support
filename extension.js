@@ -90,6 +90,9 @@ const PROPERTIES = [
 ];
 
 let diagnosticTimer = null;
+let suggestDebounce = null;
+let suggestRequested = false;
+let widgetListener = null;
 
 function activate(context) {
     applyIconThemeAuto();
@@ -98,7 +101,10 @@ function activate(context) {
         vscode.commands.registerCommand('eryscript.validateDocument', validateActiveDocument),
         vscode.commands.registerCommand('eryscript.showDocumentation', () => {
             vscode.env.openExternal(vscode.Uri.parse(DOCUMENTATION_URL));
-        }),
+        })
+    );
+
+    context.subscriptions.push(
         vscode.languages.registerCompletionItemProvider(
             { language: LANGUAGE_ID },
             createCompletionProvider(),
@@ -116,15 +122,29 @@ function activate(context) {
     context.subscriptions.push(
         vscode.workspace.onDidOpenTextDocument(document => {
             refreshDiagnostics(document, diagnostics);
+            if (document.languageId === LANGUAGE_ID && vscode.window.activeTextEditor?.document === document) {
+                showSuggestions();
+            }
         }),
         vscode.workspace.onDidChangeTextDocument(event => {
             scheduleDiagnostics(event.document, diagnostics);
+            if (event.document.languageId === LANGUAGE_ID) {
+                debounceSuggest();
+            }
         }),
         vscode.workspace.onDidCloseTextDocument(document => {
             diagnostics.delete(document.uri);
         }),
         vscode.window.onDidChangeActiveTextEditor(editor => {
             if (editor) refreshDiagnostics(editor.document, diagnostics);
+            if (editor && editor.document.languageId === LANGUAGE_ID) {
+                showSuggestions();
+            } else {
+                hideWidgetIfVisible();
+            }
+        }),
+        vscode.commands.registerCommand('_eryscript.hideSuggest', () => {
+            suggestRequested = false;
         })
     );
 }
@@ -197,6 +217,40 @@ function completion(label, kind, range, insertText) {
 function wordLength(text) {
     const match = text.match(/[A-Za-z0-9_]*$/);
     return match ? match[0].length : 0;
+}
+
+function showSuggestions() {
+    if (!vscode.window.activeTextEditor || vscode.window.activeTextEditor.document.languageId !== LANGUAGE_ID) {
+        return;
+    }
+    suggestRequested = true;
+    vscode.commands.executeCommand('editor.action.triggerSuggest');
+    ensureVisibilityListener();
+}
+
+function ensureVisibilityListener() {
+    if (widgetListener) return;
+    widgetListener = vscode.commands.registerCommand('_eryscript.hideSuggest', () => {
+        suggestRequested = false;
+        widgetListener.dispose();
+        widgetListener = null;
+    });
+}
+
+function hideWidgetIfVisible() {
+    if (widgetListener) {
+        widgetListener.dispose();
+        widgetListener = null;
+    }
+    suggestRequested = false;
+}
+
+function debounceSuggest() {
+    if (!suggestRequested) return;
+    if (suggestDebounce) clearTimeout(suggestDebounce);
+    suggestDebounce = setTimeout(() => {
+        vscode.commands.executeCommand('editor.action.triggerSuggest');
+    }, 250);
 }
 
 function scheduleDiagnostics(document, collection) {
@@ -333,6 +387,7 @@ function validateActiveDocument() {
 
 function deactivate() {
     if (diagnosticTimer) clearTimeout(diagnosticTimer);
+    if (suggestDebounce) clearTimeout(suggestDebounce);
 }
 
 module.exports = { activate, deactivate };
