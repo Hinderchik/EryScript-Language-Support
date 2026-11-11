@@ -1,13 +1,15 @@
 # EryScript Language
 
-![EryScript icon](EryScript_Icon.png)
-
-[![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f.svg)](LICENSE.md)
-[![Version](https://img.shields.io/badge/version-2.0.0-2ea44f.svg)](CHANGELOG.md)
-[![VS Code](https://img.shields.io/badge/VS%20Code-1.80%2B-007ACC.svg)](https://code.visualstudio.com/)
+[MIT License](LICENSE.md) · v2.0.0 · VS Code ≥ 1.80
 
 Full language support for **EryScript**, the scripting language used to mod **Erythros Lite**.
-Syntax highlighting, IntelliSense, diagnostics, snippets and custom file icons — everything in one lightweight extension.
+Syntax highlighting, IntelliSense, diagnostics, snippets and custom file icons — all in one lightweight extension.
+
+---
+
+## Install
+
+Install directly from the VS Code extension view (`Ctrl+Shift+X`) by searching for **EryScript** published by **xunkal1**, or visit the [Marketplace page](https://marketplace.visualstudio.com/items?itemName=XunKal1.eryscript).
 
 ---
 
@@ -29,7 +31,7 @@ The extension is written in plain JavaScript, has no runtime dependencies and st
 ## Quick start
 
 1. Install the extension from the Marketplace.
-2. Create a file named `MyMod.ery` (or `.eryscript`).
+2. Create a file named `MyMod.ery`.
 3. Paste the template below and press `Ctrl+Space` anywhere to explore the API.
 
 ```eryscript
@@ -56,7 +58,7 @@ mend
 ## Language overview
 
 ```eryscript
-// A method is opened with method and closed with mend
+// A method is opened with `method` and closed with `mend`
 method GiveCoins(ply, amount)
     var coins = call ply.inventory.count("Coin")
     if coins >= amount
@@ -99,7 +101,7 @@ Open the Command Palette (`Ctrl+Shift+P`) and type `EryScript`:
 
 ## Snippets
 
-Type the prefix and press `Tab`.
+Type the prefix and press `Tab`:
 
 | Prefix | Inserts |
 |---|---|
@@ -126,13 +128,7 @@ Type the prefix and press `Tab`.
 | `eryscript.enableDiagnostics` | `true` | Enable the linter |
 | `eryscript.autoApplyIconTheme` | `true` | Apply the EryScript icon theme when no icon theme is selected yet |
 
----
-
-## File icons
-
-The extension ships an icon theme called **EryScript Icon Theme**.
-It is applied automatically on first activation when you have not chosen an icon theme yet.
-To switch manually, run **File → Preferences → File Icon Theme** (`Ctrl+K Ctrl+T`) and pick **EryScript Icon Theme**.
+To switch the icon theme manually run **File → Preferences → File Icon Theme** (`Ctrl+K Ctrl+T`) and pick **EryScript Icon Theme**.
 
 ---
 
@@ -157,18 +153,6 @@ Diagnostics update as you type and can be disabled with `eryscript.enableDiagnos
 
 ---
 
-## Installation from VSIX
-
-If the extension is not available in the Marketplace yet:
-
-1. Download `eryscript.vsix`.
-2. Run `Extensions: Install from VSIX...` from the Command Palette.
-3. Reload the window.
-
-On Windows you can also double-click `install.bat` next to the VSIX.
-
----
-
 ## Troubleshooting
 
 **Syntax highlighting is missing**
@@ -184,11 +168,8 @@ Press `Ctrl+Space` manually. Completion is triggered by typing, `.` or `(`.
 
 ## Contributing
 
-Issues and feature requests are welcome. Please include:
-
-- VS Code version,
-- a minimal `.ery` sample that reproduces the problem,
-- the exact message shown in the Problems panel.
+Issues and feature requests are welcome at <https://github.com/Hinderchik/EryScript-Language-Support/issues>.
+Please include your VS Code version, a minimal `.ery` sample that reproduces the problem and the exact message from the Problems panel.
 
 ---
 
@@ -200,9 +181,15 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 
 ---
 
-# EryScript Language Support — Русский
+# Поддержка EryScript для VS Code
 
-Полная поддержка языка **EryScript** для VS Code — языка скриптов для модификации **Erythros Lite**.
+Полная поддержка языка **EryScript** — языка скриптов для модификации **Erythros Lite** от **Keyneed**.
+
+Подсветка синтаксиса, автодополнение, линтер, сниппеты и иконки файлов в одном расширении.
+
+## Установка
+
+Установите расширение из внутреннего магазина VS Code (`Ctrl+Shift+X`) по запросу **EryScript** (издатель **xunkal1**) или откройте [страницу на Marketplace](https://marketplace.visualstudio.com/items?itemName=XunKal1.eryscript).
 
 ## Возможности
 
@@ -213,24 +200,22 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 | **Линтер** | Пропущенный `mend` / `end`, дубликаты методов, неверный регистр ключевых слов, устаревший `print()` |
 | **Сниппеты** | 13 шаблонов: `emethod`, `eif`, `eife`, `eelseif`, `efor`, `etry`, `ecallback`, `eusing`, `evar`, `elog`, `enew`, `ecal`, `emode` |
 | **Иконки файлов** | Своя тема иконок для `.ery` и `.eryscript` |
-| **Быстрый доступ к вики** | Команда открытия официальной документации |
+| **Быстрый доступ к вики** | Команда открытия официальной документации Erythros |
 
 ## Быстрый старт
 
 1. Установите расширение из Marketplace.
 2. Создайте файл `MyMod.ery`.
-3. Вставьте шаблон из примера выше и нажмите `Ctrl+Space`.
+3. Вставьте шаблон выше и нажмите `Ctrl+Space`.
 
 ## Команды
+
+Откройте Палитру команд (`Ctrl+Shift+P`) и введите `EryScript`:
 
 | Команда | Действие |
 |---|---|
 | `EryScript: Validate EryScript Document` | Проверить документ и показать число ошибок и предупреждений |
 | `EryScript: Open EryScript Documentation` | Открыть вики Erythros |
-
-## Сниппеты
-
-Наберите префикс и нажмите `Tab`: `emethod`, `eif`, `eife`, `eelseif`, `efor`, `etry`, `ecallback`, `eusing`, `evar`, `elog`, `enew`, `ecal`, `emode`.
 
 ## Настройки
 
@@ -238,11 +223,6 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 |---|---|---|
 | `eryscript.enableDiagnostics` | `true` | Включить линтер |
 | `eryscript.autoApplyIconTheme` | `true` | Автоматически включать тему иконок, если тема ещё не выбрана |
-
-## Иконки файлов
-
-Тема **EryScript Icon Theme** применяется автоматически при первом запуске, если у вас ещё не выбрана другая тема иконок.
-Переключить вручную: `Ctrl+K Ctrl+T` → **EryScript Icon Theme**.
 
 ## Лицензия
 
