@@ -220,12 +220,15 @@ function wordLength(text) {
 }
 
 function showSuggestions() {
+    const enabled = vscode.workspace
+        .getConfiguration('eryscript')
+        .get('autoComplete', true);
+    if (!enabled) return;
     if (!vscode.window.activeTextEditor || vscode.window.activeTextEditor.document.languageId !== LANGUAGE_ID) {
         return;
     }
     suggestRequested = true;
     vscode.commands.executeCommand('editor.action.triggerSuggest');
-    ensureVisibilityListener();
 }
 
 function ensureVisibilityListener() {
@@ -246,7 +249,10 @@ function hideWidgetIfVisible() {
 }
 
 function debounceSuggest() {
-    if (!suggestRequested) return;
+    const enabled = vscode.workspace
+        .getConfiguration('eryscript')
+        .get('autoComplete', true);
+    if (!enabled || !suggestRequested) return;
     if (suggestDebounce) clearTimeout(suggestDebounce);
     suggestDebounce = setTimeout(() => {
         vscode.commands.executeCommand('editor.action.triggerSuggest');

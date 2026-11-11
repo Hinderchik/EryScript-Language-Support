@@ -96,6 +96,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Apply the EryScript file icon theme automatically when no icon theme is selected yet."
+                },
+                "eryscript.autoComplete": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show the IntelliSense popup automatically while typing inside .ery files."
                 }
             }
         },
