@@ -5,6 +5,21 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-11-11
+
+### Changed
+
+- Cleaned up `README.md` for the Visual Studio Marketplace: removed installation-from-local-VSIX instructions, local install scripts and internal publishing notes.
+- The documentation now links directly to the Marketplace page (`XunKal1.eryscript`) and points feature requests to the GitHub issue tracker.
+- Updated publisher ID in `package.json` from `keyneed` to `xunkal1`.
+
+### Removed
+
+- `PUBLISHING.md` — kept only for local use, not shipped in the package.
+- Local install helpers (`install.bat`, `install.js`). Users should install via the Marketplace or `Extensions: Install from VSIX...` inside VS Code.
+
+---
+
 ## [2.0.0] - 2026-11-11
 
 ### Added
