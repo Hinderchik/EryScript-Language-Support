@@ -8,14 +8,14 @@ var tickSeconds = 1.0
 var healPerTick = 25
 var staminaPerTick = 100
 var playersKey = "InfiniteStamina_Players"
-var staminaFieldKey = "InfiniteStamina_FieldState"
+var staminaModeKey = "InfiniteStamina_Mode"
 
 method OnModLoadedCallback(script, mod)
     if call MyNetwork.IsMasterClient == false
         return null
     end
     call GlobalVars.Set(playersKey, new ObjectArrayWrapper())
-    call GlobalVars.Set(staminaFieldKey, null)
+    call GlobalVars.Set(staminaModeKey, null)
     call Debug.Log("[InfiniteStamina] loaded, tick = " + tickSeconds + "s")
     call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
 mend
@@ -30,7 +30,7 @@ mend
 
 method OnPlayerRespawnedServerCallback(view, life)
     call TrackPlayer(call view.Owner)
-    call RefillPlayer(view)
+    call RefillLife(life)
 mend
 
 method OnPlayerDisconnectedServerCallback(connId)
@@ -54,7 +54,11 @@ method OnChatMessageServerCallback(text, type, connId)
         if players != null
             count = call players.Count()
         end
-        call NetworkChat.sendAlert("[InfiniteStamina] active for " + count + " player(s)")
+        var mode = call GlobalVars.Get(staminaModeKey)
+        if mode == null
+            mode = "detecting"
+        end
+        call NetworkChat.sendAlert("[InfiniteStamina] players: " + count + ", stamina mode: " + mode)
         return false
     end
     return true
@@ -95,33 +99,74 @@ method StaminaTick()
 mend
 
 method RefillPlayer(view)
-    var life = call view.lifeLocal
-    if life == null
-        return null
-    end
-    if life.health > 0
-        call life.damage(-healPerTick, "heal")
-    end
-    call SetStamina(life)
-mend
-
-method SetStamina(life)
-    var state = call GlobalVars.Get(staminaFieldKey)
-    if state == "missing"
+    if view == null
         return null
     end
     try
+        var life = call view.lifeLocal
+        if life == null
+            return null
+        end
+        call RefillLife(life)
+        return null
+    catch
+        return null
+    end
+mend
+
+method RefillLife(life)
+    if life == null
+        return null
+    end
+    var mode = call DetectStaminaMode(life)
+    try
+        if life.health > 0
+            call life.damage(-healPerTick, "heal")
+        end
+        call ApplyStamina(life, mode)
+        return null
+    catch
+        return null
+    end
+mend
+
+method DetectStaminaMode(life)
+    var mode = call GlobalVars.Get(staminaModeKey)
+    if mode != null
+        return mode
+    end
+    try
+        call life.SetStamina()
+        call GlobalVars.Set(staminaModeKey, "method")
+        call Debug.Log("[InfiniteStamina] stamina restored by life.SetStamina()")
+        return "method"
+    catch
+        call Debug.Log("[InfiniteStamina] life.SetStamina() is not available")
+    end
+    try
         life.stamina = staminaPerTick
-        if state == null
-            call GlobalVars.Set(staminaFieldKey, "ok")
-            call Debug.Log("[InfiniteStamina] life.stamina is available and always full")
+        call GlobalVars.Set(staminaModeKey, "field")
+        call Debug.Log("[InfiniteStamina] stamina restored by life.stamina field")
+        return "field"
+    catch
+        call Debug.Log("[InfiniteStamina] life.stamina field is not available, healing only")
+    end
+    call GlobalVars.Set(staminaModeKey, "none")
+    return "none"
+mend
+
+method ApplyStamina(life, mode)
+    try
+        if mode == "method"
+            call life.SetStamina()
+            return null
+        end
+        if mode == "field"
+            life.stamina = staminaPerTick
+            return null
         end
         return null
     catch
-        if state == null
-            call GlobalVars.Set(staminaFieldKey, "missing")
-            call Debug.Log("[InfiniteStamina] life.stamina is not exposed, heal loop keeps the player alive")
-        end
         return null
     end
 mend

@@ -1,6 +1,6 @@
 # EryScript Language
 
-[MIT License](LICENSE.md) · v2.0.2 · VS Code ≥ 1.80
+[MIT License](LICENSE.md) · v2.0.3 · VS Code ≥ 1.80
 
 Full language support for **EryScript**, the scripting language used to mod **Erythros Lite**.
 Syntax highlighting, IntelliSense, diagnostics, snippets and custom file icons — all in one lightweight extension.
@@ -98,10 +98,10 @@ A complete, ready-to-paste mod ships with the extension: [`examples/infinite_sta
 It starts a one-second server loop and, for every tracked player:
 
 - heals the player with `call life.damage(-amount, "heal")` so health never drops to zero;
-- sets `life.stamina` to 100 when the game build exposes that field, so stamina literally never runs out;
-- falls back to the heal loop alone when `life.stamina` is not available (the result is reported once in the log).
+- calls the `SetStamina()` script method to refill stamina;
+- falls back to the `life.stamina` field and then to healing only if `SetStamina()` is not exposed (the working mode is detected once and reported in the log).
 
-Type `/stamina` in chat to print how many players the loop is currently serving.
+Type `/stamina` in chat to print how many players the loop is serving and which stamina mode is active.
 
 ```eryscript
 method StaminaTick()
@@ -248,7 +248,7 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 
 ## Пример мода
 
-Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): серверный цикл раз в секунду лечит игроков через `life.damage(-amount, "heal")` и выставляет `life.stamina = 100`, когда игровая сборка отдаёт это поле. Если поля нет, остаётся цикл лечения. Команда `/stamina` в чате показывает число отслеживаемых игроков.
+Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): серверный цикл раз в секунду лечит игроков через `life.damage(-amount, "heal")` и вызывает скриптовый метод `SetStamina()` для восстановления стамины. Если метода нет, используется поле `life.stamina`, иначе остаётся цикл лечения. Команда `/stamina` в чате показывает число отслеживаемых игроков и активный режим.
 
 ## Команды
 

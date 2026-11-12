@@ -5,6 +5,19 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.3] - 2026-11-12
+
+### Fixed
+
+- `examples/infinite_stamina.ery`: the respawn handler no longer calls `view.lifeLocal`. `OnPlayerRespawnedServerCallback(view, life)` already receives the `Life` component, so the example now calls `RefillLife(life)` and avoids the in-game `Exception: Member not found: lifeLocal`.
+- The `lifeLocal` lookup in `RefillPlayer` is wrapped in `try/catch`, so players whose view has no life component are skipped instead of spamming the game log.
+
+### Changed
+
+- Stamina is now restored with the `SetStamina()` script method first. If the method is missing, the example falls back to the `life.stamina` field and finally to healing only. The working mode is detected once, cached in `GlobalVars` and shown by the `/stamina` chat command.
+
+---
+
 ## [2.0.2] - 2026-11-12
 
 ### Added
