@@ -65,6 +65,10 @@ method OnChatMessageServerCallback(text, type, connId)
         call ReportStamina()
         return false
     end
+    if call text == "/probe"
+        call RunProbes()
+        return false
+    end
     return true
 mend
 
@@ -89,6 +93,106 @@ method ReportStamina()
     end
     var refills = call GlobalVars.Get(refillKey)
     call NetworkChat.sendAlert("[InfiniteStamina] players: " + count + ", refills: " + refills + ", stamina: " + current)
+mend
+
+method RunProbes()
+    call NetworkChat.sendAlert("[Probe] started, watch Player.log")
+    call MyAsync.WaitForSeconds(0.3, "ProbeStamina")
+    call MyAsync.WaitForSeconds(0.9, "ProbeReal")
+    call MyAsync.WaitForSeconds(1.5, "ProbeExhaustMinus")
+    call MyAsync.WaitForSeconds(2.1, "ProbeExhaustPlus")
+    call MyAsync.WaitForSeconds(2.7, "ProbeEnergy")
+    call MyAsync.WaitForSeconds(3.3, "ProbeVitality")
+    call MyAsync.WaitForSeconds(4.2, "ProbeReport")
+mend
+
+method GetFirstLife()
+    var players = call GlobalVars.Get(playersKey)
+    if players == null
+        return null
+    end
+    if call players.Count() == 0
+        return null
+    end
+    var view = call NetworkUserList.getModelFromPlayer(call players.Get(0))
+    if view == null
+        return null
+    end
+    return call view.lifeLocal
+mend
+
+method ProbeStamina()
+    var life = call GetFirstLife()
+    if life == null
+        call Debug.Log("[Probe] stamina: no life")
+        return null
+    end
+    call Debug.Log("[Probe] stamina before=" + life.stamina)
+    life.stamina = 100
+    call Debug.Log("[Probe] stamina after set 100 -> " + life.stamina)
+mend
+
+method ProbeReal()
+    var life = call GetFirstLife()
+    if life == null
+        call Debug.Log("[Probe] real: no life")
+        return null
+    end
+    life.realStamina = 100
+    call Debug.Log("[Probe] realStamina set 100 -> stamina " + life.stamina)
+mend
+
+method ProbeExhaustMinus()
+    var life = call GetFirstLife()
+    if life == null
+        call Debug.Log("[Probe] exhaust-: no life")
+        return null
+    end
+    call Debug.Log("[Probe] exhaust-: before=" + life.stamina)
+    call life.exhaust(-100)
+    call Debug.Log("[Probe] exhaust(-100) -> " + life.stamina)
+mend
+
+method ProbeExhaustPlus()
+    var life = call GetFirstLife()
+    if life == null
+        call Debug.Log("[Probe] exhaust+: no life")
+        return null
+    end
+    call Debug.Log("[Probe] exhaust+: before=" + life.stamina)
+    call life.exhaust(100)
+    call Debug.Log("[Probe] exhaust(100) -> " + life.stamina)
+mend
+
+method ProbeEnergy()
+    var life = call GetFirstLife()
+    if life == null
+        call Debug.Log("[Probe] energy: no life")
+        return null
+    end
+    life.energyBuffer = 100
+    call Debug.Log("[Probe] energyBuffer set 100 -> stamina " + life.stamina)
+mend
+
+method ProbeVitality()
+    var life = call GetFirstLife()
+    if life == null
+        call Debug.Log("[Probe] vitality: no life")
+        return null
+    end
+    var serial = call life.saveAllVitality()
+    call Debug.Log("[Probe] vitality serial=" + serial + " stamina=" + life.stamina)
+    call life.loadAllVitality(serial)
+    call Debug.Log("[Probe] vitality after load -> " + life.stamina)
+mend
+
+method ProbeReport()
+    var life = call GetFirstLife()
+    if life == null
+        call Debug.Log("[Probe] report: no life")
+        return null
+    end
+    call Debug.Log("[Probe] final stamina=" + life.stamina + " health=" + life.health)
 mend
 
 method TrackPlayer(connId)

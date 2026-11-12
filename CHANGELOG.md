@@ -5,6 +5,14 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.8] - 2026-11-12
+
+### Added
+
+- `/probe` chat command in `examples/infinite_stamina.ery`. It tries every stamina write path one by one (0.6 s apart, each in its own call stack): `stamina`, `realStamina`, `exhaust(-100)`, `exhaust(100)`, `energyBuffer`, and `saveAllVitality` / `loadAllVitality`. Every attempt logs the value before and after to `Player.log`, and a failing member is reported by name, so the working write path can be identified without guessing.
+
+---
+
 ## [2.0.7] - 2026-11-12
 
 ### Fixed
