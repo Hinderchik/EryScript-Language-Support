@@ -15,6 +15,16 @@ var refillKey = "InfiniteStamina_Refills"
 method OnModLoadedCallback(script, mod)
     call Debug.Log("[InfiniteStamina] mod loaded")
     call EnsureLoop()
+    call MyAsync.WaitForSeconds(1.0, "TrackLocal")
+    call MyAsync.WaitForSeconds(5.0, "TrackLocal")
+mend
+
+method TrackLocal()
+    var connId = call MyNetwork.LocalPlayer
+    if connId == 0
+        return null
+    end
+    call TrackPlayer(connId)
 mend
 
 method EnsureLoop()
@@ -32,12 +42,13 @@ method OnPlayerConnectedServerCallback(connId)
 mend
 
 method OnPlayerCreatedCallback(view, player)
-    call TrackPlayer(call view.Owner)
-    call RefillPlayer(view)
+    var model = call NetworkUserList.getModelFromPlayer(call view.Owner)
+    if model != null
+        call RefillPlayer(model)
+    end
 mend
 
 method OnPlayerRespawnedServerCallback(view, life)
-    call TrackPlayer(call view.Owner)
     call EnsureLoop()
     call RefillLife(life)
 mend
@@ -130,14 +141,11 @@ method RefillPlayer(view)
     if view == null
         return null
     end
-    var life = call view.life
-    if life != null
-        call RefillLife(life)
+    var life = call view.lifeLocal
+    if life == null
+        life = call view.life
     end
-    var localLife = call view.lifeLocal
-    if localLife != null
-        call RefillLife(localLife)
-    end
+    call RefillLife(life)
 mend
 
 method RefillLife(life)

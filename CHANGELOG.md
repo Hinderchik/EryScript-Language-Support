@@ -5,6 +5,19 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.6] - 2026-11-12
+
+### Fixed
+
+- `examples/infinite_stamina.ery`: `OnPlayerCreatedCallback(view, player)` receives a Photon view, not the player model, so calling `view.life` raised `Exception: Member not found: life`. The example now resolves the model with `NetworkUserList.getModelFromPlayer(view.Owner)` before touching any life component.
+
+### Changed
+
+- The example reads and writes stamina through the model's `lifeLocal` component (as in the official Erythros wiki examples), falling back to `life` only when `lifeLocal` is empty.
+- The host is tracked explicitly through `MyNetwork.LocalPlayer` one and five seconds after the mod loads, so a solo host is served even when no `OnPlayerConnectedServerCallback` fires for the local player.
+
+---
+
 ## [2.0.5] - 2026-11-12
 
 ### Fixed

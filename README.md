@@ -1,6 +1,6 @@
 # EryScript Language
 
-[MIT License](LICENSE.md) · v2.0.5 · VS Code ≥ 1.80
+[MIT License](LICENSE.md) · v2.0.6 · VS Code ≥ 1.80
 
 Full language support for **EryScript**, the scripting language used to mod **Erythros Lite**.
 Syntax highlighting, IntelliSense, diagnostics, snippets and custom file icons — all in one lightweight extension.
@@ -99,7 +99,9 @@ It starts a half-second loop and, for every tracked player:
 
 - heals the player with `call life.damage(-amount, "heal")` so health never drops to zero;
 - reads `life.stamina` and sets it back to `staminaTarget` (100) as soon as it drops below `staminaThreshold` (50 by default);
-- updates both `view.life` and `view.lifeLocal`, so the stamina bar of the local player stays full.
+- resolves the player through `NetworkUserList.getModelFromPlayer(connId)` and uses the `lifeLocal` component (falling back to `life`), so the stamina bar of the local player stays full.
+
+The host is tracked through `MyNetwork.LocalPlayer`, every other player through `OnPlayerConnectedServerCallback(connId)`.
 
 `Keyneed.Life` exposes stamina as the `stamina` property (`get_stamina` / `set_stamina`). There is no `SetStamina()` method, so the example never calls one.
 
@@ -248,7 +250,7 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 
 ## Пример мода
 
-Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): цикл раз в полсекунды лечит игроков через `life.damage(-amount, "heal")` и восстанавливает стамину, как только она опускается ниже порога `staminaThreshold` (по умолчанию 50), выставляя `life.stamina` в `staminaTarget` (100). В `Keyneed.Life` стамина — это свойство `stamina` (`get_stamina` / `set_stamina`), метода `SetStamina()` не существует. Обновляются и `view.life`, и `view.lifeLocal`, поэтому полоса стамины локального игрока остаётся заполненной. Команда `/stamina` в чате показывает число отслеживаемых игроков, количество восстановлений и текущую стамину.
+Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): цикл раз в полсекунды лечит игроков через `life.damage(-amount, "heal")` и восстанавливает стамину, как только она опускается ниже порога `staminaThreshold` (по умолчанию 50), выставляя `life.stamina` в `staminaTarget` (100). В `Keyneed.Life` стамина — это свойство `stamina` (`get_stamina` / `set_stamina`), метода `SetStamina()` не существует. Модель игрока берётся через `NetworkUserList.getModelFromPlayer(connId)`, работа идёт с компонентом `lifeLocal` (с запасным вариантом `life`), поэтому полоса стамины локального игрока остаётся заполненной. Хост отслеживается через `MyNetwork.LocalPlayer`, остальные игроки — через `OnPlayerConnectedServerCallback(connId)`. Команда `/stamina` в чате показывает число отслеживаемых игроков, количество восстановлений и текущую стамину.
 
 ## Команды
 
