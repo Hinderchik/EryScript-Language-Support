@@ -1,6 +1,6 @@
 # EryScript Language
 
-[MIT License](LICENSE.md) · v2.0.0 · VS Code ≥ 1.80
+[MIT License](LICENSE.md) · v2.0.2 · VS Code ≥ 1.80
 
 Full language support for **EryScript**, the scripting language used to mod **Erythros Lite**.
 Syntax highlighting, IntelliSense, diagnostics, snippets and custom file icons — all in one lightweight extension.
@@ -45,9 +45,12 @@ method OnModLoadedCallback(script, mod)
     call Debug.Log("My mod loaded")
 mend
 
-method OnPlayerConnectedServerCallback(player)
-    var name = call player.name
-    call Debug.Log("Player connected: " + name)
+method OnPlayerConnectedServerCallback(connId)
+    var view = call NetworkUserList.getModelFromPlayer(connId)
+    if view != null
+        var ownerId = call view.Owner
+        call Debug.Log("Player connected: " + ownerId)
+    end
 mend
 ```
 
@@ -85,6 +88,40 @@ end
 Supported keywords: `using`, `method`, `mend`, `var`, `call`, `if`, `elseif`, `else`, `end`, `for`, `to`, `return`, `break`, `continue`, `try`, `catch`, `new`, `and`, `or`, `not`, `true`, `false`, `null`.
 
 Supported callbacks: `OnModLoadedCallback`, `OnPlayerConnectedServerCallback`, `OnPlayerDisconnectedServerCallback`, `OnPlayerDieServerCallback`, `OnChatMessageServerCallback`, `OnPlayerCreatedCallback`, `OnPlayerRespawnedServerCallback`, `OnPlayerDamagedServerCallback`.
+
+---
+
+## Example mod
+
+A complete, ready-to-paste mod ships with the extension: [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery).
+
+It starts a one-second server loop and, for every tracked player:
+
+- heals the player with `call life.damage(-amount, "heal")` so health never drops to zero;
+- sets `life.stamina` to 100 when the game build exposes that field, so stamina literally never runs out;
+- falls back to the heal loop alone when `life.stamina` is not available (the result is reported once in the log).
+
+Type `/stamina` in chat to print how many players the loop is currently serving.
+
+```eryscript
+method StaminaTick()
+    if call MyNetwork.IsMasterClient == false
+        return null
+    end
+    var players = call GlobalVars.Get(playersKey)
+    if players != null
+        for i = 0 to call players.Count() - 1
+            var view = call NetworkUserList.getModelFromPlayer(call players.Get(i))
+            if view != null
+                call RefillPlayer(view)
+            end
+        end
+    end
+    call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
+mend
+```
+
+Copy the file to your mod folder, or open it in VS Code to try highlighting, IntelliSense and diagnostics on real code.
 
 ---
 
@@ -127,6 +164,7 @@ Type the prefix and press `Tab`:
 |---|---|---|
 | `eryscript.enableDiagnostics` | `true` | Enable the linter |
 | `eryscript.autoApplyIconTheme` | `true` | Apply the EryScript icon theme when no icon theme is selected yet |
+| `eryscript.autoComplete` | `true` | Show the IntelliSense popup automatically while typing in `.ery` files |
 
 To switch the icon theme manually run **File → Preferences → File Icon Theme** (`Ctrl+K Ctrl+T`) and pick **EryScript Icon Theme**.
 
@@ -208,6 +246,10 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 2. Создайте файл `MyMod.ery`.
 3. Вставьте шаблон выше и нажмите `Ctrl+Space`.
 
+## Пример мода
+
+Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): серверный цикл раз в секунду лечит игроков через `life.damage(-amount, "heal")` и выставляет `life.stamina = 100`, когда игровая сборка отдаёт это поле. Если поля нет, остаётся цикл лечения. Команда `/stamina` в чате показывает число отслеживаемых игроков.
+
 ## Команды
 
 Откройте Палитру команд (`Ctrl+Shift+P`) и введите `EryScript`:
@@ -223,6 +265,7 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 |---|---|---|
 | `eryscript.enableDiagnostics` | `true` | Включить линтер |
 | `eryscript.autoApplyIconTheme` | `true` | Автоматически включать тему иконок, если тема ещё не выбрана |
+| `eryscript.autoComplete` | `true` | Автоматически показывать окно автодополнения при наборе кода в `.ery` |
 
 ## Лицензия
 

@@ -5,6 +5,20 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-11-12
+
+### Added
+
+- `examples/infinite_stamina.ery` — a complete, ready-to-paste mod that keeps health topped up and refills stamina every second. It tracks players across connect, spawn, respawn and disconnect events, uses `MyAsync.WaitForSeconds` for the loop and reports status via the `/stamina` chat command.
+- README section **Example mod** with a walkthrough of the example and a code excerpt.
+
+### Fixed
+
+- README quick-start callback now matches the real signature `OnPlayerConnectedServerCallback(connId)`.
+- README now documents the `eryscript.autoComplete` setting and shows the current version.
+
+---
+
 ## [2.0.1] - 2026-11-11
 
 ### Changed

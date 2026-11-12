@@ -1,0 +1,127 @@
+using Keyneed
+using UnityEngine
+using EryScriptUtils
+using EryScript
+using System
+
+var tickSeconds = 1.0
+var healPerTick = 25
+var staminaPerTick = 100
+var playersKey = "InfiniteStamina_Players"
+var staminaFieldKey = "InfiniteStamina_FieldState"
+
+method OnModLoadedCallback(script, mod)
+    if call MyNetwork.IsMasterClient == false
+        return null
+    end
+    call GlobalVars.Set(playersKey, new ObjectArrayWrapper())
+    call GlobalVars.Set(staminaFieldKey, null)
+    call Debug.Log("[InfiniteStamina] loaded, tick = " + tickSeconds + "s")
+    call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
+mend
+
+method OnPlayerConnectedServerCallback(connId)
+    call TrackPlayer(connId)
+mend
+
+method OnPlayerCreatedCallback(view, player)
+    call TrackPlayer(call view.Owner)
+mend
+
+method OnPlayerRespawnedServerCallback(view, life)
+    call TrackPlayer(call view.Owner)
+    call RefillPlayer(view)
+mend
+
+method OnPlayerDisconnectedServerCallback(connId)
+    var players = call GlobalVars.Get(playersKey)
+    if players == null
+        return null
+    end
+    for i = 0 to call players.Count() - 1
+        if call players.Get(i) == connId
+            call players.RemoveAt(i)
+            call Debug.Log("[InfiniteStamina] stopped tracking player " + connId)
+            return null
+        end
+    end
+mend
+
+method OnChatMessageServerCallback(text, type, connId)
+    if call text == "/stamina"
+        var players = call GlobalVars.Get(playersKey)
+        var count = 0
+        if players != null
+            count = call players.Count()
+        end
+        call NetworkChat.sendAlert("[InfiniteStamina] active for " + count + " player(s)")
+        return false
+    end
+    return true
+mend
+
+method TrackPlayer(connId)
+    if connId == null or connId == 0
+        return null
+    end
+    var players = call GlobalVars.Get(playersKey)
+    if players == null
+        players = new ObjectArrayWrapper()
+        call GlobalVars.Set(playersKey, players)
+    end
+    for i = 0 to call players.Count() - 1
+        if call players.Get(i) == connId
+            return null
+        end
+    end
+    call players.Add(connId)
+    call Debug.Log("[InfiniteStamina] tracking player " + connId)
+mend
+
+method StaminaTick()
+    if call MyNetwork.IsMasterClient == false
+        return null
+    end
+    var players = call GlobalVars.Get(playersKey)
+    if players != null
+        for i = 0 to call players.Count() - 1
+            var view = call NetworkUserList.getModelFromPlayer(call players.Get(i))
+            if view != null
+                call RefillPlayer(view)
+            end
+        end
+    end
+    call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
+mend
+
+method RefillPlayer(view)
+    var life = call view.lifeLocal
+    if life == null
+        return null
+    end
+    if life.health > 0
+        call life.damage(-healPerTick, "heal")
+    end
+    call SetStamina(life)
+mend
+
+method SetStamina(life)
+    var state = call GlobalVars.Get(staminaFieldKey)
+    if state == "missing"
+        return null
+    end
+    try
+        life.stamina = staminaPerTick
+        if state == null
+            call GlobalVars.Set(staminaFieldKey, "ok")
+            call Debug.Log("[InfiniteStamina] life.stamina is available and always full")
+        end
+        return null
+    catch
+        if state == null
+            call GlobalVars.Set(staminaFieldKey, "missing")
+            call Debug.Log("[InfiniteStamina] life.stamina is not exposed, heal loop keeps the player alive")
+        end
+        return null
+    end
+mend
