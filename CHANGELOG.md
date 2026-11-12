@@ -5,6 +5,20 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.4] - 2026-11-12
+
+### Fixed
+
+- `examples/infinite_stamina.ery`: the loop no longer returns early when `MyNetwork.IsMasterClient` is `false` during `OnModLoadedCallback`. At mod load the network is not initialised yet, so the check blocked the timer and `/stamina` kept reporting `mode: detecting`. The loop now starts from `OnModLoadedCallback` and is re-armed from `OnPlayerConnectedServerCallback` / `OnPlayerRespawnedServerCallback`.
+- All `GlobalVars` and `life` access is wrapped in `try/catch` so a missing member cannot raise a red exception in the game log.
+
+### Changed
+
+- Stamina is restored only when the current value drops below `staminaThreshold` (50 by default). If the value cannot be read, the example refills on every tick as before.
+- `/stamina` now also prints the current stamina value, which makes it easier to see whether `life.stamina` is readable.
+
+---
+
 ## [2.0.3] - 2026-11-12
 
 ### Fixed

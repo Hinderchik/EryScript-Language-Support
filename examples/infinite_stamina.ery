@@ -7,17 +7,28 @@ using System
 var tickSeconds = 1.0
 var healPerTick = 25
 var staminaPerTick = 100
+var staminaThreshold = 50
 var playersKey = "InfiniteStamina_Players"
 var staminaModeKey = "InfiniteStamina_Mode"
+var loopKey = "InfiniteStamina_Loop"
 
 method OnModLoadedCallback(script, mod)
-    if call MyNetwork.IsMasterClient == false
+    call Debug.Log("[InfiniteStamina] mod loaded")
+    call EnsureLoop()
+mend
+
+method EnsureLoop()
+    try
+        if call GlobalVars.Get(loopKey) == 1
+            return null
+        end
+        call GlobalVars.Set(loopKey, 1)
+        call Debug.Log("[InfiniteStamina] loop started")
+        call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
+        return null
+    catch
         return null
     end
-    call GlobalVars.Set(playersKey, new ObjectArrayWrapper())
-    call GlobalVars.Set(staminaModeKey, null)
-    call Debug.Log("[InfiniteStamina] loaded, tick = " + tickSeconds + "s")
-    call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
 mend
 
 method OnPlayerConnectedServerCallback(connId)
@@ -30,6 +41,7 @@ mend
 
 method OnPlayerRespawnedServerCallback(view, life)
     call TrackPlayer(call view.Owner)
+    call EnsureLoop()
     call RefillLife(life)
 mend
 
@@ -49,19 +61,37 @@ mend
 
 method OnChatMessageServerCallback(text, type, connId)
     if call text == "/stamina"
-        var players = call GlobalVars.Get(playersKey)
-        var count = 0
-        if players != null
-            count = call players.Count()
-        end
-        var mode = call GlobalVars.Get(staminaModeKey)
-        if mode == null
-            mode = "detecting"
-        end
-        call NetworkChat.sendAlert("[InfiniteStamina] players: " + count + ", stamina mode: " + mode)
+        call ReportStamina()
         return false
     end
     return true
+mend
+
+method ReportStamina()
+    var players = call GlobalVars.Get(playersKey)
+    var count = 0
+    var mode = call GlobalVars.Get(staminaModeKey)
+    var current = "n/a"
+    if players != null
+        count = call players.Count()
+        if count > 0
+            var view = call NetworkUserList.getModelFromPlayer(call players.Get(0))
+            if view != null
+                try
+                    var life = call view.lifeLocal
+                    if life != null
+                        current = life.stamina
+                    end
+                catch
+                    current = "n/a"
+                end
+            end
+        end
+    end
+    if mode == null
+        mode = "detecting"
+    end
+    call NetworkChat.sendAlert("[InfiniteStamina] players: " + count + ", mode: " + mode + ", stamina: " + current)
 mend
 
 method TrackPlayer(connId)
@@ -75,17 +105,16 @@ method TrackPlayer(connId)
     end
     for i = 0 to call players.Count() - 1
         if call players.Get(i) == connId
+            call EnsureLoop()
             return null
         end
     end
     call players.Add(connId)
     call Debug.Log("[InfiniteStamina] tracking player " + connId)
+    call EnsureLoop()
 mend
 
 method StaminaTick()
-    if call MyNetwork.IsMasterClient == false
-        return null
-    end
     var players = call GlobalVars.Get(playersKey)
     if players != null
         for i = 0 to call players.Count() - 1
@@ -123,11 +152,10 @@ method RefillLife(life)
         if life.health > 0
             call life.damage(-healPerTick, "heal")
         end
-        call ApplyStamina(life, mode)
-        return null
     catch
         return null
     end
+    call EnsureStamina(life, mode)
 mend
 
 method DetectStaminaMode(life)
@@ -155,7 +183,28 @@ method DetectStaminaMode(life)
     return "none"
 mend
 
-method ApplyStamina(life, mode)
+method EnsureStamina(life, mode)
+    if mode == "none"
+        return null
+    end
+    try
+        var current = life.stamina
+        if current == null
+            call RefillStamina(life, mode)
+            return null
+        end
+        if current < staminaThreshold
+            call RefillStamina(life, mode)
+            return null
+        end
+        return null
+    catch
+        call RefillStamina(life, mode)
+        return null
+    end
+mend
+
+method RefillStamina(life, mode)
     try
         if mode == "method"
             call life.SetStamina()
