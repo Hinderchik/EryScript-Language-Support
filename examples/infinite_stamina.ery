@@ -8,40 +8,50 @@ var tickSeconds = 0.2
 var healAmount = 25
 var playersKey = "InfiniteStamina_Players"
 var refillKey = "InfiniteStamina_Refills"
+var diagKey = "InfiniteStamina_Diag"
 
 method OnModLoadedCallback(script, mod)
     call GlobalVars.Set(playersKey, null)
     call GlobalVars.Set(refillKey, 0)
-    call Debug.Log("[InfiniteStamina] loop started")
+    call GlobalVars.Set(diagKey, 0)
+    call Debug.Log("[InfiniteStamina] loaded, conn=" + call MyNetwork.LocalPlayer)
+    call TrackAll()
     call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
-    call MyAsync.WaitForSeconds(1.0, "TrackLocal")
-    call MyAsync.WaitForSeconds(5.0, "TrackLocal")
+    call MyAsync.WaitForSeconds(0.5, "TrackAll")
+    call MyAsync.WaitForSeconds(2.0, "TrackAll")
+    call MyAsync.WaitForSeconds(5.0, "TrackAll")
 mend
 
-method TrackLocal()
+method TrackAll()
     var connId = call MyNetwork.LocalPlayer
-    if connId == 0
-        return null
+    if connId != 0
+        call TrackPlayer(connId)
     end
-    call TrackPlayer(connId)
+    call Debug.Log("[InfiniteStamina] trackAll conn=" + connId)
 mend
 
 method OnPlayerConnectedServerCallback(connId)
+    call Debug.Log("[InfiniteStamina] connected " + connId)
     call TrackPlayer(connId)
 mend
 
 method OnPlayerCreatedCallback(view, player)
+    call Debug.Log("[InfiniteStamina] created view=" + view)
     var model = call NetworkUserList.getModelFromPlayer(call view.Owner)
     if model != null
         call RefillPlayer(model)
+    else
+        call Debug.Log("[InfiniteStamina] model=null for owner")
     end
 mend
 
 method OnPlayerRespawnedServerCallback(view, life)
+    call Debug.Log("[InfiniteStamina] respawned")
     call RefillLife(life)
 mend
 
 method OnPlayerDisconnectedServerCallback(connId)
+    call Debug.Log("[InfiniteStamina] disconnected " + connId)
     var players = call GlobalVars.Get(playersKey)
     if players == null
         return null
@@ -49,7 +59,7 @@ method OnPlayerDisconnectedServerCallback(connId)
     for i = 0 to call players.Count() - 1
         if call players.Get(i) == connId
             call players.RemoveAt(i)
-            call Debug.Log("[InfiniteStamina] stopped tracking player " + connId)
+            call Debug.Log("[InfiniteStamina] stopped tracking " + connId)
             return null
         end
     end
@@ -58,6 +68,10 @@ mend
 method OnChatMessageServerCallback(text, type, connId)
     if call text == "/stamina"
         call ReportStamina()
+        return false
+    end
+    if call text == "/track"
+        call TrackAll()
         return false
     end
     return true
@@ -104,11 +118,12 @@ method TrackPlayer(connId)
     end
     for i = 0 to call players.Count() - 1
         if call players.Get(i) == connId
+            call Debug.Log("[InfiniteStamina] already tracked " + connId)
             return null
         end
     end
     call players.Add(connId)
-    call Debug.Log("[InfiniteStamina] tracking player " + connId)
+    call Debug.Log("[InfiniteStamina] tracking " + connId)
 mend
 
 method StaminaTick()
@@ -122,10 +137,15 @@ method RefillAll()
     if players == null
         return null
     end
+    if call players.Count() == 0
+        return null
+    end
     for i = 0 to call players.Count() - 1
         var view = call NetworkUserList.getModelFromPlayer(call players.Get(i))
         if view != null
             call RefillPlayer(view)
+        else
+            call Debug.Log("[InfiniteStamina] no model for " + players.Get(i))
         end
     end
 mend
@@ -136,6 +156,7 @@ method RefillPlayer(view)
     end
     var life = call view.lifeLocal
     if life == null
+        call Debug.Log("[InfiniteStamina] lifeLocal null")
         life = call view.life
     end
     call RefillLife(life)
