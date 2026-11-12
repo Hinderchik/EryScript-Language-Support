@@ -5,6 +5,18 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.7] - 2026-11-12
+
+### Fixed
+
+- The example no longer relies on the `InfiniteStamina_Loop` flag in `GlobalVars`. That flag survives a mod reload, so after reloading mods the old version returned early from `EnsureLoop` and the timer never restarted. `OnModLoadedCallback` now always clears the player list and starts a fresh timer.
+
+### Added
+
+- `examples/infinite_stamina.ery` writes a diagnostic line to `Player.log` every three seconds: tracked player count, refill count, current `stamina` and `health`. Every refill also logs the value before and after the write, which shows whether the stamina setter actually takes effect.
+
+---
+
 ## [2.0.6] - 2026-11-12
 
 ### Fixed
