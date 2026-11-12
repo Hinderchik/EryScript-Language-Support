@@ -4,10 +4,8 @@ using EryScriptUtils
 using EryScript
 using System
 
-var tickSeconds = 0.5
+var tickSeconds = 0.2
 var healAmount = 25
-var staminaThreshold = 50
-var staminaTarget = 100
 var playersKey = "InfiniteStamina_Players"
 var refillKey = "InfiniteStamina_Refills"
 
@@ -150,12 +148,8 @@ method RefillLife(life)
     if life.health > 0
         call life.damage(-healAmount, "heal")
     end
-    var current = life.stamina
-    if current < staminaThreshold
-        call life.exhaust(current - staminaTarget)
-        call Debug.Log("[InfiniteStamina] stamina " + current + " -> " + life.stamina)
-        call CountRefill()
-    end
+    call life.exhaust(-200)
+    call CountRefill()
 mend
 
 method CountRefill()

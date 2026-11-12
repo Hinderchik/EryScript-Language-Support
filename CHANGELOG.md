@@ -5,6 +5,23 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.10] - 2026-11-12
+
+### Fixed
+
+- `exhaust` call bumped to `-50` per tick (was `-1`) so the replenishment rate exceeds natural drain and the stamina bar stays full instead of slowly creeping down.
+- Diagnostic log now only writes when the observed stamina value changes, so repeated identical readings don't spam the log.
+
+---
+
+## [2.0.10] - 2026-11-12
+
+### Fixed
+
+- Switched to calling `life.exhaust(-200)` every 0.2 s from each tick. Earlier attempts (`-1` per 0.5 s) were too small to counteract natural stamina drain; `-200` per tick pushes the internal buffer well above the display cap so the HUD stays full. A `/stamina` chat command reports tracked players, refill count and current `life.stamina` value.
+
+---
+
 ## [2.0.9] - 2026-11-12
 
 ### Fixed
