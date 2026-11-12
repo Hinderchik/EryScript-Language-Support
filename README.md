@@ -1,6 +1,6 @@
 # EryScript Language
 
-[MIT License](LICENSE.md) · v2.0.4 · VS Code ≥ 1.80
+[MIT License](LICENSE.md) · v2.0.5 · VS Code ≥ 1.80
 
 Full language support for **EryScript**, the scripting language used to mod **Erythros Lite**.
 Syntax highlighting, IntelliSense, diagnostics, snippets and custom file icons — all in one lightweight extension.
@@ -95,28 +95,28 @@ Supported callbacks: `OnModLoadedCallback`, `OnPlayerConnectedServerCallback`, `
 
 A complete, ready-to-paste mod ships with the extension: [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery).
 
-It starts a one-second loop and, for every tracked player:
+It starts a half-second loop and, for every tracked player:
 
 - heals the player with `call life.damage(-amount, "heal")` so health never drops to zero;
-- reads current stamina and refills it only when it drops below `staminaThreshold` (50 by default);
-- calls the `SetStamina()` script method first, falls back to the `life.stamina` field and then to healing only if neither exists (the working mode is detected once and reported in the log).
+- reads `life.stamina` and sets it back to `staminaTarget` (100) as soon as it drops below `staminaThreshold` (50 by default);
+- updates both `view.life` and `view.lifeLocal`, so the stamina bar of the local player stays full.
 
-Type `/stamina` in chat to print how many players the loop is serving, which stamina mode is active and the current stamina value.
+`Keyneed.Life` exposes stamina as the `stamina` property (`get_stamina` / `set_stamina`). There is no `SetStamina()` method, so the example never calls one.
+
+Type `/stamina` in chat to print how many players the loop is serving, how many refills were made and the current stamina value.
 
 ```eryscript
-method EnsureStamina(life, mode)
-    if mode == "none"
+method RefillLife(life)
+    if life == null
         return null
     end
-    try
-        var current = life.stamina
-        if current < staminaThreshold
-            call RefillStamina(life, mode)
-        end
-        return null
-    catch
-        call RefillStamina(life, mode)
-        return null
+    if life.health > 0
+        call life.damage(-healAmount, "heal")
+    end
+    var current = life.stamina
+    if current < staminaThreshold
+        life.stamina = staminaTarget
+        call CountRefill()
     end
 mend
 ```
@@ -248,7 +248,7 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 
 ## Пример мода
 
-Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): серверный цикл раз в секунду лечит игроков через `life.damage(-amount, "heal")` и восстанавливает стамину, только когда она опускается ниже порога `staminaThreshold` (по умолчанию 50). Сначала вызывается скриптовый метод `SetStamina()`, затем используется поле `life.stamina`, иначе остаётся цикл лечения. Команда `/stamina` в чате показывает число отслеживаемых игроков, активный режим и текущую стамину.
+Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): цикл раз в полсекунды лечит игроков через `life.damage(-amount, "heal")` и восстанавливает стамину, как только она опускается ниже порога `staminaThreshold` (по умолчанию 50), выставляя `life.stamina` в `staminaTarget` (100). В `Keyneed.Life` стамина — это свойство `stamina` (`get_stamina` / `set_stamina`), метода `SetStamina()` не существует. Обновляются и `view.life`, и `view.lifeLocal`, поэтому полоса стамины локального игрока остаётся заполненной. Команда `/stamina` в чате показывает число отслеживаемых игроков, количество восстановлений и текущую стамину.
 
 ## Команды
 

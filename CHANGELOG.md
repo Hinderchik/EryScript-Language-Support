@@ -5,6 +5,21 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.5] - 2026-11-12
+
+### Fixed
+
+- `examples/infinite_stamina.ery` no longer calls `life.SetStamina()`. Inspecting the running game showed that `Keyneed.Life` exposes stamina as the `stamina` property (`get_stamina` / `set_stamina`) and has no `SetStamina()` method, so the previous version always raised `Exception: Method not found: Keyneed.Life.SetStamina` and stopped the timer.
+- The timer is re-armed at the beginning of `StaminaTick`, so one failing tick can no longer stop stamina restoration.
+- Removed the `try/catch` blocks around member access. The EryScript engine raises reflection errors outside the script `try`, so they never suppressed anything and only hid the real problem.
+
+### Changed
+
+- `examples/infinite_stamina.ery` refills `life.stamina` to `staminaTarget` (100) when it drops below `staminaThreshold` (50) and updates `view.lifeLocal` as well, so the local player's stamina bar stays full.
+- The loop now ticks every 0.5 s, and `/stamina` reports the number of refills in addition to the player count and the current stamina value.
+
+---
+
 ## [2.0.4] - 2026-11-12
 
 ### Fixed

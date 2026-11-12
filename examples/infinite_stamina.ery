@@ -4,13 +4,13 @@ using EryScriptUtils
 using EryScript
 using System
 
-var tickSeconds = 1.0
-var healPerTick = 25
-var staminaPerTick = 100
+var tickSeconds = 0.5
+var healAmount = 25
 var staminaThreshold = 50
+var staminaTarget = 100
 var playersKey = "InfiniteStamina_Players"
-var staminaModeKey = "InfiniteStamina_Mode"
 var loopKey = "InfiniteStamina_Loop"
+var refillKey = "InfiniteStamina_Refills"
 
 method OnModLoadedCallback(script, mod)
     call Debug.Log("[InfiniteStamina] mod loaded")
@@ -18,17 +18,13 @@ method OnModLoadedCallback(script, mod)
 mend
 
 method EnsureLoop()
-    try
-        if call GlobalVars.Get(loopKey) == 1
-            return null
-        end
-        call GlobalVars.Set(loopKey, 1)
-        call Debug.Log("[InfiniteStamina] loop started")
-        call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
-        return null
-    catch
+    if call GlobalVars.Get(loopKey) == 1
         return null
     end
+    call GlobalVars.Set(loopKey, 1)
+    call GlobalVars.Set(refillKey, 0)
+    call Debug.Log("[InfiniteStamina] loop started")
+    call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
 mend
 
 method OnPlayerConnectedServerCallback(connId)
@@ -37,6 +33,7 @@ mend
 
 method OnPlayerCreatedCallback(view, player)
     call TrackPlayer(call view.Owner)
+    call RefillPlayer(view)
 mend
 
 method OnPlayerRespawnedServerCallback(view, life)
@@ -70,28 +67,24 @@ mend
 method ReportStamina()
     var players = call GlobalVars.Get(playersKey)
     var count = 0
-    var mode = call GlobalVars.Get(staminaModeKey)
     var current = "n/a"
     if players != null
         count = call players.Count()
         if count > 0
             var view = call NetworkUserList.getModelFromPlayer(call players.Get(0))
             if view != null
-                try
-                    var life = call view.lifeLocal
-                    if life != null
-                        current = life.stamina
-                    end
-                catch
-                    current = "n/a"
+                var life = call view.lifeLocal
+                if life == null
+                    life = call view.life
+                end
+                if life != null
+                    current = life.stamina
                 end
             end
         end
     end
-    if mode == null
-        mode = "detecting"
-    end
-    call NetworkChat.sendAlert("[InfiniteStamina] players: " + count + ", mode: " + mode + ", stamina: " + current)
+    var refills = call GlobalVars.Get(refillKey)
+    call NetworkChat.sendAlert("[InfiniteStamina] players: " + count + ", refills: " + refills + ", stamina: " + current)
 mend
 
 method TrackPlayer(connId)
@@ -115,31 +108,35 @@ method TrackPlayer(connId)
 mend
 
 method StaminaTick()
+    call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
+    call RefillAll()
+    return null
+mend
+
+method RefillAll()
     var players = call GlobalVars.Get(playersKey)
-    if players != null
-        for i = 0 to call players.Count() - 1
-            var view = call NetworkUserList.getModelFromPlayer(call players.Get(i))
-            if view != null
-                call RefillPlayer(view)
-            end
+    if players == null
+        return null
+    end
+    for i = 0 to call players.Count() - 1
+        var view = call NetworkUserList.getModelFromPlayer(call players.Get(i))
+        if view != null
+            call RefillPlayer(view)
         end
     end
-    call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
 mend
 
 method RefillPlayer(view)
     if view == null
         return null
     end
-    try
-        var life = call view.lifeLocal
-        if life == null
-            return null
-        end
+    var life = call view.life
+    if life != null
         call RefillLife(life)
-        return null
-    catch
-        return null
+    end
+    var localLife = call view.lifeLocal
+    if localLife != null
+        call RefillLife(localLife)
     end
 mend
 
@@ -147,75 +144,20 @@ method RefillLife(life)
     if life == null
         return null
     end
-    var mode = call DetectStaminaMode(life)
-    try
-        if life.health > 0
-            call life.damage(-healPerTick, "heal")
-        end
-    catch
-        return null
+    if life.health > 0
+        call life.damage(-healAmount, "heal")
     end
-    call EnsureStamina(life, mode)
-mend
-
-method DetectStaminaMode(life)
-    var mode = call GlobalVars.Get(staminaModeKey)
-    if mode != null
-        return mode
-    end
-    try
-        call life.SetStamina()
-        call GlobalVars.Set(staminaModeKey, "method")
-        call Debug.Log("[InfiniteStamina] stamina restored by life.SetStamina()")
-        return "method"
-    catch
-        call Debug.Log("[InfiniteStamina] life.SetStamina() is not available")
-    end
-    try
-        life.stamina = staminaPerTick
-        call GlobalVars.Set(staminaModeKey, "field")
-        call Debug.Log("[InfiniteStamina] stamina restored by life.stamina field")
-        return "field"
-    catch
-        call Debug.Log("[InfiniteStamina] life.stamina field is not available, healing only")
-    end
-    call GlobalVars.Set(staminaModeKey, "none")
-    return "none"
-mend
-
-method EnsureStamina(life, mode)
-    if mode == "none"
-        return null
-    end
-    try
-        var current = life.stamina
-        if current == null
-            call RefillStamina(life, mode)
-            return null
-        end
-        if current < staminaThreshold
-            call RefillStamina(life, mode)
-            return null
-        end
-        return null
-    catch
-        call RefillStamina(life, mode)
-        return null
+    var current = life.stamina
+    if current < staminaThreshold
+        life.stamina = staminaTarget
+        call CountRefill()
     end
 mend
 
-method RefillStamina(life, mode)
-    try
-        if mode == "method"
-            call life.SetStamina()
-            return null
-        end
-        if mode == "field"
-            life.stamina = staminaPerTick
-            return null
-        end
-        return null
-    catch
-        return null
+method CountRefill()
+    var count = call GlobalVars.Get(refillKey)
+    if count == null
+        count = 0
     end
+    call GlobalVars.Set(refillKey, count + 1)
 mend
