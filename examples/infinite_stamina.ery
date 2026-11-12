@@ -8,15 +8,12 @@ var tickSeconds = 0.5
 var healAmount = 25
 var staminaThreshold = 50
 var staminaTarget = 100
-var diagTicks = 6
 var playersKey = "InfiniteStamina_Players"
 var refillKey = "InfiniteStamina_Refills"
-var diagKey = "InfiniteStamina_Diag"
 
 method OnModLoadedCallback(script, mod)
     call GlobalVars.Set(playersKey, null)
     call GlobalVars.Set(refillKey, 0)
-    call GlobalVars.Set(diagKey, 0)
     call Debug.Log("[InfiniteStamina] loop started")
     call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
     call MyAsync.WaitForSeconds(1.0, "TrackLocal")
@@ -65,45 +62,22 @@ method OnChatMessageServerCallback(text, type, connId)
         call ReportStamina()
         return false
     end
-    if call text == "/probe"
-        call RunProbes()
-        return false
-    end
     return true
 mend
 
 method ReportStamina()
+    var life = call GetFirstLife()
     var players = call GlobalVars.Get(playersKey)
     var count = 0
     var current = "n/a"
     if players != null
         count = call players.Count()
-        if count > 0
-            var view = call NetworkUserList.getModelFromPlayer(call players.Get(0))
-            if view != null
-                var life = call view.lifeLocal
-                if life == null
-                    life = call view.life
-                end
-                if life != null
-                    current = life.stamina
-                end
-            end
-        end
+    end
+    if life != null
+        current = life.stamina
     end
     var refills = call GlobalVars.Get(refillKey)
     call NetworkChat.sendAlert("[InfiniteStamina] players: " + count + ", refills: " + refills + ", stamina: " + current)
-mend
-
-method RunProbes()
-    call NetworkChat.sendAlert("[Probe] started, watch Player.log")
-    call MyAsync.WaitForSeconds(0.3, "ProbeStamina")
-    call MyAsync.WaitForSeconds(0.9, "ProbeReal")
-    call MyAsync.WaitForSeconds(1.5, "ProbeExhaustMinus")
-    call MyAsync.WaitForSeconds(2.1, "ProbeExhaustPlus")
-    call MyAsync.WaitForSeconds(2.7, "ProbeEnergy")
-    call MyAsync.WaitForSeconds(3.3, "ProbeVitality")
-    call MyAsync.WaitForSeconds(4.2, "ProbeReport")
 mend
 
 method GetFirstLife()
@@ -119,80 +93,6 @@ method GetFirstLife()
         return null
     end
     return call view.lifeLocal
-mend
-
-method ProbeStamina()
-    var life = call GetFirstLife()
-    if life == null
-        call Debug.Log("[Probe] stamina: no life")
-        return null
-    end
-    call Debug.Log("[Probe] stamina before=" + life.stamina)
-    life.stamina = 100
-    call Debug.Log("[Probe] stamina after set 100 -> " + life.stamina)
-mend
-
-method ProbeReal()
-    var life = call GetFirstLife()
-    if life == null
-        call Debug.Log("[Probe] real: no life")
-        return null
-    end
-    life.realStamina = 100
-    call Debug.Log("[Probe] realStamina set 100 -> stamina " + life.stamina)
-mend
-
-method ProbeExhaustMinus()
-    var life = call GetFirstLife()
-    if life == null
-        call Debug.Log("[Probe] exhaust-: no life")
-        return null
-    end
-    call Debug.Log("[Probe] exhaust-: before=" + life.stamina)
-    call life.exhaust(-100)
-    call Debug.Log("[Probe] exhaust(-100) -> " + life.stamina)
-mend
-
-method ProbeExhaustPlus()
-    var life = call GetFirstLife()
-    if life == null
-        call Debug.Log("[Probe] exhaust+: no life")
-        return null
-    end
-    call Debug.Log("[Probe] exhaust+: before=" + life.stamina)
-    call life.exhaust(100)
-    call Debug.Log("[Probe] exhaust(100) -> " + life.stamina)
-mend
-
-method ProbeEnergy()
-    var life = call GetFirstLife()
-    if life == null
-        call Debug.Log("[Probe] energy: no life")
-        return null
-    end
-    life.energyBuffer = 100
-    call Debug.Log("[Probe] energyBuffer set 100 -> stamina " + life.stamina)
-mend
-
-method ProbeVitality()
-    var life = call GetFirstLife()
-    if life == null
-        call Debug.Log("[Probe] vitality: no life")
-        return null
-    end
-    var serial = call life.saveAllVitality()
-    call Debug.Log("[Probe] vitality serial=" + serial + " stamina=" + life.stamina)
-    call life.loadAllVitality(serial)
-    call Debug.Log("[Probe] vitality after load -> " + life.stamina)
-mend
-
-method ProbeReport()
-    var life = call GetFirstLife()
-    if life == null
-        call Debug.Log("[Probe] report: no life")
-        return null
-    end
-    call Debug.Log("[Probe] final stamina=" + life.stamina + " health=" + life.health)
 mend
 
 method TrackPlayer(connId)
@@ -216,7 +116,6 @@ mend
 method StaminaTick()
     call MyAsync.WaitForSeconds(tickSeconds, "StaminaTick")
     call RefillAll()
-    call DiagTick()
     return null
 mend
 
@@ -253,7 +152,7 @@ method RefillLife(life)
     end
     var current = life.stamina
     if current < staminaThreshold
-        life.stamina = staminaTarget
+        call life.exhaust(current - staminaTarget)
         call Debug.Log("[InfiniteStamina] stamina " + current + " -> " + life.stamina)
         call CountRefill()
     end
@@ -265,37 +164,4 @@ method CountRefill()
         count = 0
     end
     call GlobalVars.Set(refillKey, count + 1)
-mend
-
-method DiagTick()
-    var n = call GlobalVars.Get(diagKey)
-    if n == null
-        n = 0
-    end
-    n = n + 1
-    if n < diagTicks
-        call GlobalVars.Set(diagKey, n)
-        return null
-    end
-    call GlobalVars.Set(diagKey, 0)
-    var players = call GlobalVars.Get(playersKey)
-    var count = 0
-    var info = "no-life"
-    if players != null
-        count = call players.Count()
-        if count > 0
-            var view = call NetworkUserList.getModelFromPlayer(call players.Get(0))
-            if view != null
-                var life = call view.lifeLocal
-                if life != null
-                    info = "sta=" + life.stamina + " hp=" + life.health
-                else
-                    info = "lifeLocal=null"
-                end
-            else
-                info = "model=null"
-            end
-        end
-    end
-    call Debug.Log("[InfiniteStamina] players=" + count + " refills=" + call GlobalVars.Get(refillKey) + " " + info)
 mend

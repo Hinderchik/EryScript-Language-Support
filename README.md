@@ -1,6 +1,6 @@
 # EryScript Language
 
-[MIT License](LICENSE.md) · v2.0.8 · VS Code ≥ 1.80
+[MIT License](LICENSE.md) · v2.0.9 · VS Code ≥ 1.80
 
 Full language support for **EryScript**, the scripting language used to mod **Erythros Lite**.
 Syntax highlighting, IntelliSense, diagnostics, snippets and custom file icons — all in one lightweight extension.
@@ -98,12 +98,12 @@ A complete, ready-to-paste mod ships with the extension: [`examples/infinite_sta
 It starts a half-second loop and, for every tracked player:
 
 - heals the player with `call life.damage(-amount, "heal")` so health never drops to zero;
-- reads `life.stamina` and sets it back to `staminaTarget` (100) as soon as it drops below `staminaThreshold` (50 by default);
+- reads `life.stamina` and, when it drops below `staminaThreshold` (50 by default), restores it with `call life.exhaust(current - staminaTarget)`;
 - resolves the player through `NetworkUserList.getModelFromPlayer(connId)` and uses the `lifeLocal` component (falling back to `life`), so the stamina bar of the local player stays full.
 
 The host is tracked through `MyNetwork.LocalPlayer`, every other player through `OnPlayerConnectedServerCallback(connId)`.
 
-`Keyneed.Life` exposes stamina as the `stamina` property (`get_stamina` / `set_stamina`). There is no `SetStamina()` method, so the example never calls one.
+Stamina is readable through the `stamina` property, but the only writable path is `Life.exhaust()`. Calling it with a negative amount adds stamina, and unlike the property setter it also refreshes the HUD. `realStamina` and `energyBuffer` reject writes, and there is no `SetStamina()` method.
 
 Type `/stamina` in chat to print how many players the loop is serving, how many refills were made and the current stamina value.
 
@@ -117,7 +117,7 @@ method RefillLife(life)
     end
     var current = life.stamina
     if current < staminaThreshold
-        life.stamina = staminaTarget
+        call life.exhaust(current - staminaTarget)
         call CountRefill()
     end
 mend
@@ -250,7 +250,7 @@ Erythros Lite and EryScript are created by **Keyneed**. This extension is an uno
 
 ## Пример мода
 
-Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): цикл раз в полсекунды лечит игроков через `life.damage(-amount, "heal")` и восстанавливает стамину, как только она опускается ниже порога `staminaThreshold` (по умолчанию 50), выставляя `life.stamina` в `staminaTarget` (100). В `Keyneed.Life` стамина — это свойство `stamina` (`get_stamina` / `set_stamina`), метода `SetStamina()` не существует. Модель игрока берётся через `NetworkUserList.getModelFromPlayer(connId)`, работа идёт с компонентом `lifeLocal` (с запасным вариантом `life`), поэтому полоса стамины локального игрока остаётся заполненной. Хост отслеживается через `MyNetwork.LocalPlayer`, остальные игроки — через `OnPlayerConnectedServerCallback(connId)`. Команда `/stamina` в чате показывает число отслеживаемых игроков, количество восстановлений и текущую стамину.
+Готовый пример лежит в [`examples/infinite_stamina.ery`](examples/infinite_stamina.ery): цикл раз в полсекунды лечит игроков через `life.damage(-amount, "heal")` и восстанавливает стамину, как только она опускается ниже порога `staminaThreshold` (по умолчанию 50), вызывая `life.exhaust(текущая - staminaTarget)`. Стамину можно читать через свойство `stamina`, но единственный рабочий путь записи — `Life.exhaust()`: отрицательное значение добавляет стамину и обновляет полоску в интерфейсе (обычное присваивание `stamina = 100` меняет значение, но HUD его игнорирует, а `realStamina` и `energyBuffer` вообще только для чтения). Метода `SetStamina()` не существует. Модель игрока берётся через `NetworkUserList.getModelFromPlayer(connId)`, работа идёт с компонентом `lifeLocal` (с запасным вариантом `life`), поэтому полоса стамины локального игрока остаётся заполненной. Хост отслеживается через `MyNetwork.LocalPlayer`, остальные игроки — через `OnPlayerConnectedServerCallback(connId)`. Команда `/stamina` в чате показывает число отслеживаемых игроков, количество восстановлений и текущую стамину.
 
 ## Команды
 

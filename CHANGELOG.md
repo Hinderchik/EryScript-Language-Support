@@ -5,6 +5,19 @@ All notable changes to the **EryScript Language Support** extension are document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.9] - 2026-11-12
+
+### Fixed
+
+- `examples/infinite_stamina.ery` now restores stamina with `call life.exhaust(current - staminaTarget)`. In-game probing showed that `exhaust()` is the only write path that actually reaches the HUD: a plain `life.stamina = 100` assignment changes the value returned by the getter but the stamina bar stays empty, `life.realStamina` and `life.energyBuffer` reject writes with `Set failed`, and `saveAllVitality()` returns `null`.
+
+### Changed
+
+- Removed the temporary `/probe` command and the three-second diagnostic log. The example logs a single line per refill instead.
+- README (EN and RU) documents the stamina write path and the read-only members.
+
+---
+
 ## [2.0.8] - 2026-11-12
 
 ### Added
